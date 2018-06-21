@@ -55,7 +55,7 @@ _implicit_deps = {
 }
 
 scala_deps = {
-    "scalac": attr.label(default = Label("@scala_default"), providers = [_ScalacProvider])
+    "scalac": attr.label(default = Label("@scala_default"), providers = [_ScalacProvider], cfg = "host")
 }
 
 # Single dep to allow IDEs to pickup all the implicit dependencies.
