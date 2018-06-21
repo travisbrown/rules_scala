@@ -24,7 +24,7 @@ load(
 
 _launcher_template = {
     "_java_stub_template": attr.label(
-        default = Label("@java_stub_template//file")),
+        default = Label("@java_stub_template//file"), cfg = "host"),
 }
 
 
