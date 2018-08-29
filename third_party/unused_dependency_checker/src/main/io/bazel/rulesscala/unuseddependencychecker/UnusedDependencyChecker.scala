@@ -65,6 +65,7 @@ class UnusedDependencyChecker(val global: Global) extends Plugin { self =>
 
       private def unusedDependenciesFound: Set[String] = {
         val usedJars: Set[AbstractFile] = findUsedJars
+        usedJars.foreach(println)
         val directJarPaths = direct.keys.toSet
         val usedJarPaths = usedJars.map(_.path)
 
@@ -96,6 +97,7 @@ class UnusedDependencyChecker(val global: Global) extends Plugin { self =>
       val jars = collection.mutable.Set[AbstractFile]()
 
       def walkTopLevels(root: Symbol): Unit = {
+        println(s"  sym: $root")
         def safeInfo(sym: Symbol): Type =
           if (sym.hasRawInfo && sym.rawInfo.isComplete) sym.info else NoType
 
@@ -103,13 +105,18 @@ class UnusedDependencyChecker(val global: Global) extends Plugin { self =>
           if (sym.hasPackageFlag && !sym.isModuleClass) sym.moduleClass else sym
 
         for (x <- safeInfo(packageClassOrSelf(root)).decls) {
-          if (x == root) ()
-          else if (x.hasPackageFlag) walkTopLevels(x)
+          print(s"    decl: $x")
+          if (x == root) { println(" (root)"); () }
+          else if (x.hasPackageFlag) { println(" (rec)"); walkTopLevels(x) }
           else if (x.owner != root) { // exclude package class members
+            print(s" (!own) ${x.hasRawInfo.toString} ${ if (x.hasRawInfo) x.rawInfo.isComplete.toString else 0.toString }")
             if (x.hasRawInfo && x.rawInfo.isComplete) {
               val assocFile = x.associatedFile
+              println(s"      file: $assocFile")
               if (assocFile.path.endsWith(".class") && assocFile.underlyingSource.isDefined)
                 assocFile.underlyingSource.foreach(jars += _)
+            } else {
+              println
             }
           }
         }
